@@ -32,15 +32,34 @@ CITY_KEYWORDS = [
     "ahmedabad", "chennai", "kochi", "cochin",
     "remote", "anywhere", "work from home",
 ]
+import re
 
-SENIORITY_BLOCK = [
-    "senior", "sr.", "sr ", "lead", "staff", "principal",
-    "director", "head of", "vp ", "vice president", "manager ii",
-    "manager iii", "group product manager", "gpm",
+TITLE_ALLOW = [
+    r"associate\s+product\s+manager",
+    r"\bapm\b",
+    r"(junior|jr\.?|trainee|graduate|entry.level)\s+product\s+manager",
+    r"product\s+associate",
+    r"product\s+analyst",
+    r"product\s+owner",
+    r"founder'?s?\s*office",
+    r"founding\s+(associate|member|team)",
+    r"chief\s+of\s+staff",
+    r"(executive|personal)\s+assistant",
+    r"\bea\s+to\b",
+]
+
+TITLE_BLOCK = [
+    r"\bsenior\b", r"\bsr\.?\b", r"\blead\b", r"\bstaff\b", r"\bprincipal\b",
+    r"\bdirector\b", r"\bhead\s+of\b", r"\bvp\b", r"vice\s+president",
+    r"\bmanager\s+(ii|iii|iv)\b", r"\bowner\s+(ii|iii|iv)\b",
+    r"\bassoc\.?\s*dir", r"\bagm\b", r"\bgpm\b",
+    r"\bintern\b", r"internship",
+    r"[3-9]\s*[-+]\s*\d*\s*\+?\s*(yrs|years)",
+    r"[3-9]\+\s*(yrs|years)",
 ]
 
 # an EA role only counts if it smells like founder's office
-EA_REQUIRED_SIGNALS = ["founder", "ceo", "md", "director", "chief of staff"]
+EA_REQUIRED_SIGNALS = ["founder", "ceo", "chief of staff", "founding"]
 
 NOTION_HEADERS = {
     "Authorization": f"Bearer {NOTION_TOKEN}",
@@ -117,14 +136,16 @@ def clean(v):
         return ""
     return str(v).strip()
 
-
 def keep(title, location):
     t, loc = title.lower(), location.lower()
 
-    if any(b in t for b in SENIORITY_BLOCK):
+    if not any(re.search(p, t) for p in TITLE_ALLOW):
         return False
 
-    if "executive assistant" in t or t.startswith("ea "):
+    if any(re.search(p, t) for p in TITLE_BLOCK):
+        return False
+
+    if "executive assistant" in t or "personal assistant" in t or "ea to" in t:
         if not any(s in t for s in EA_REQUIRED_SIGNALS):
             return False
 
