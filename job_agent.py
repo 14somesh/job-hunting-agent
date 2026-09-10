@@ -139,7 +139,7 @@ def clean(v):
     return str(v).strip()
 
     
-    def normalize(text):
+def normalize(text):
     text = text.lower()
     text = _re.sub(r"\b(pvt\.?|private|ltd\.?|limited|inc\.?|llp)\b", "", text)
     text = _re.sub(r"[^a-z0-9\s]", " ", text)
