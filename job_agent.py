@@ -84,8 +84,8 @@ def tg(text):
 
 
 # ---------- notion ----------
-def existing_urls():
-    urls, cursor = set(), None
+def existing_jobs():
+    jobs, cursor = [], None
     while True:
         payload = {"page_size": 100}
         if cursor:
@@ -97,13 +97,29 @@ def existing_urls():
         r.raise_for_status()
         data = r.json()
         for row in data["results"]:
-            u = row["properties"].get("Job URL", {}).get("url")
-            if u:
-                urls.add(u.strip())
+            props = row["properties"]
+            url = props.get("Job URL", {}).get("url")
+            company = "".join(t["plain_text"] for t in props.get("Company", {}).get("title", []))
+            role = "".join(t["plain_text"] for t in props.get("Role", {}).get("rich_text", []))
+            jobs.append({
+                "url": (url or "").strip(),
+                "key": normalize(f"{company} {role}"),
+            })
         if not data.get("has_more"):
             break
         cursor = data["next_cursor"]
-    return urls
+    return jobs
+
+
+def is_duplicate(company, title, seen_jobs, seen_keys_this_run):
+    key = normalize(f"{company} {title}")
+    for existing in seen_jobs:
+        if fuzz.ratio(key, existing["key"]) >= 87:
+            return True
+    for k in seen_keys_this_run:
+        if fuzz.ratio(key, k) >= 87:
+            return True
+    return False
 
 
 def add_to_notion(job):
