@@ -137,6 +137,8 @@ def clean(v):
     if v is None or (isinstance(v, float) and pd.isna(v)):
         return ""
     return str(v).strip()
+
+    
     def normalize(text):
     text = text.lower()
     text = _re.sub(r"\b(pvt\.?|private|ltd\.?|limited|inc\.?|llp)\b", "", text)
