@@ -1,10 +1,10 @@
 import os
+import re
 import time
 import traceback
 import requests
 import pandas as pd
 from jobspy import scrape_jobs
-import re as _re
 from rapidfuzz import fuzz
 
 # ---------- config ----------
@@ -34,7 +34,6 @@ CITY_KEYWORDS = [
     "ahmedabad", "chennai", "kochi", "cochin",
     "remote", "anywhere", "work from home",
 ]
-import re
 
 TITLE_ALLOW = [
     r"associate\s+product\s+manager",
@@ -154,13 +153,14 @@ def clean(v):
         return ""
     return str(v).strip()
 
-    
+
 def normalize(text):
     text = text.lower()
-    text = _re.sub(r"\b(pvt\.?|private|ltd\.?|limited|inc\.?|llp)\b", "", text)
-    text = _re.sub(r"[^a-z0-9\s]", " ", text)
-    text = _re.sub(r"\s+", " ", text).strip()
+    text = re.sub(r"\b(pvt\.?|private|ltd\.?|limited|inc\.?|llp)\b", "", text)
+    text = re.sub(r"[^a-z0-9\s]", " ", text)
+    text = re.sub(r"\s+", " ", text).strip()
     return text
+
 
 def keep(title, location):
     t, loc = title.lower(), location.lower()
@@ -187,8 +187,10 @@ SOURCE_MAP = {"linkedin": "LinkedIn", "indeed": "Indeed",
 
 # ---------- main ----------
 def run():
-    seen = existing_urls()
-    print(f"{len(seen)} jobs already in Notion")
+    seen_jobs = existing_jobs()
+    seen_urls = {j["url"] for j in seen_jobs if j["url"]}
+    seen_keys_this_run = set()
+    print(f"{len(seen_jobs)} jobs already in Notion")
 
     found, added = {}, 0
 
@@ -217,9 +219,11 @@ def run():
                 company = clean(row.get("company"))
                 location = clean(row.get("location"))
 
-                if not url or not title or url in seen or url in found:
+                if not url or not title or url in seen_urls or url in found:
                     continue
                 if not keep(title, location):
+                    continue
+                if is_duplicate(company, title, seen_jobs, seen_keys_this_run):
                     continue
 
                 found[url] = {
@@ -231,6 +235,7 @@ def run():
                     "date_posted": clean(row.get("date_posted")) or None,
                     "source": SOURCE_MAP.get(clean(row.get("site")).lower(), "Manual"),
                 }
+                seen_keys_this_run.add(normalize(f"{company} {title}"))
 
             time.sleep(4)
 
