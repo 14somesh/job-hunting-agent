@@ -9,14 +9,29 @@ from job_agent import (
 
 # (slug, ats_type) - confirmed via search. Add more over time.
 WATCHLIST = [
-    ("meesho", "lever"),
+    ("acceldata", "lever"),
+    ("aiprise", "ashby"),
+    ("atomicwork", "greenhouse"),
+    ("CamiAI", "smartrecruiters"),
+    ("clevertap", "lever"),
+    ("cred", "lever"),
+    ("Cred Platform", "ashby"),
+    ("cynlr", "ashby"),
+    ("drivetrain", "lever"),
+    ("ema", "ashby"),
     ("fampay", "lever"),
+    ("groww", "greenhouse"),
+    ("hevodata", "lever"),
+    ("jupiter", "lever"),
+    ("libra", "ashby"),
+    ("metaforms", "ashby"),
     ("mindtickle", "lever"),
-    ("stable-money1", "lever"),
+    ("observeai", "greenhouse"),
+    ("postman", "greenhouse"),
+    ("prodigal", "greenhouse"),
+    ("sarvam", "ashby"),
     ("Sprinto", "lever"),
-    ("paytmpayments", "lever"),
-    ("prophecysimpledatalabs", "greenhouse"),
-    ("startree", "greenhouse"),
+    ("stable-money1", "lever"),
 ]
 
 ATS_URLS = {
