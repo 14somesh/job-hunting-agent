@@ -4,6 +4,8 @@ import traceback
 import requests
 import pandas as pd
 from jobspy import scrape_jobs
+import re as _re
+from rapidfuzz import fuzz
 
 # ---------- config ----------
 NOTION_TOKEN = os.environ["NOTION_TOKEN"]
@@ -135,6 +137,12 @@ def clean(v):
     if v is None or (isinstance(v, float) and pd.isna(v)):
         return ""
     return str(v).strip()
+    def normalize(text):
+    text = text.lower()
+    text = _re.sub(r"\b(pvt\.?|private|ltd\.?|limited|inc\.?|llp)\b", "", text)
+    text = _re.sub(r"[^a-z0-9\s]", " ", text)
+    text = _re.sub(r"\s+", " ", text).strip()
+    return text
 
 def keep(title, location):
     t, loc = title.lower(), location.lower()
